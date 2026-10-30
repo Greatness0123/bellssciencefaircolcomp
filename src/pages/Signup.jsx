@@ -17,6 +17,20 @@ const STEPS = [
 ];
 
 const LEVELS = ["", "weak", "fair", "good", "strong"];
+const Brand = () => (
+  <div className="flex items-center gap-3">
+    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white sm:h-13 sm:w-13 dark:border-[#2B3A4B]">
+      <img
+        src="/Sentinel AI Hexagon Logo.png"
+        alt="Sentinel AI Logo"
+        className="h-10 w-10 object-contain sm:h-12 sm:w-12"
+      />
+    </div>
+    <h1 className="text-2xl font-bold tracking-tight text-[#0F172A] sm:text-3xl dark:text-white">
+      Sentinel <span className="text-[#2DD4BF]">AI</span>
+    </h1>
+  </div>
+);
 
 function getStrength(pw) {
   if (!pw) return 0;
@@ -58,63 +72,23 @@ const Signup = () => {
   };
 
   return (
-    <main className="flex min-h-screen w-full bg-[#F8FAFC] transition-colors duration-300 dark:bg-[#0A0E13] dark:text-white">
+    <>
+      {/* <main className="flex min-h-screen w-full bg-[#F8FAFC] transition-colors duration-300 dark:bg-[#0A0E13] dark:text-white"> */}
       {/* toggle */}
       <div className="absolute right-16 top-2 z-10">
         <ThemeToggle />
       </div>
-
-      {/* left side */}
-      <div className="relative hidden min-h-screen w-full flex-col border-r border-[#E2E8F0] bg-[#F8FAFC] px-8 py-6 sm:px-12 md:flex lg:px-18 dark:border-[#1F2A37] dark:bg-[#111922]">
-        {/* Logo section */}
-        <div className="flex items-center gap-3">
-          <div className="flex h-13 w-13 items-center justify-center rounded-xl border border-gray-200 bg-white dark:border-[#1F2A37] dark:bg-[#0A0E13]">
-            <img
-              src="/Sentinel AI Hexagon Logo.png"
-              alt="Sentinel AI Logo"
-              className="h-12 w-12 object-contain"
-            />
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight text-[#0F172A] dark:text-white">
-            Sentinel <span className="text-[#2DD4BF]">AI</span>
-          </h1>
-        </div>
-
-        {/* Main content */}
-        <div className="my-auto py-16">
-          <h2 className="font-inter text-[40px] font-semibold leading-[1.3] tracking-tight text-[#0F172A] dark:text-white">
-            Set up your security
-            <br />
-            workspace in minutes.
-          </h2>
-
-          <ol className="mt-10 space-y-4">
-            {STEPS.map((step, i) => (
-              <li key={step.title} className="flex gap-3">
-                <span className="pt-1 text-sm text-[#2DD4BF]">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <div className="flex flex-col gap-1 font-family-jetbrains">
-                  <p className="text-lg font-medium text-[#0F172A] dark:text-white">
-                    {step.title}
-                  </p>
-                  <p className="text-lg text-[#64748B] dark:text-[#9AA9BA]">
-                    {step.text}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </div>
-
       {/* right side */}
+      {/* <div className="mb-10 ">
+        <Brand />
+      </div> */}
       <div className="flex min-h-screen w-full items-center justify-center bg-white px-6 py-12 sm:px-12 lg:px-[74px] dark:bg-[#0A0E13]">
         <div className="w-full max-w-130">
           {/* Heading */}
+
           <div className="mb-7">
             <h1 className="font-inter text-4xl font-semibold tracking-tight text-[#0F172A] dark:text-white">
-              Create your account
+              Create your Profile
             </h1>
             <p className="mt-1 text-base font-medium text-[#64748B] dark:text-[#9AA9BA]">
               Start monitoring your lab network.
@@ -246,7 +220,8 @@ const Signup = () => {
           </p>
         </div>
       </div>
-    </main>
+      // {/* </main> */}
+    </>
   );
 };
 
