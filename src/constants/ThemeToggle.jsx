@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Sun, Moon, ToggleRight, ToggleLeft } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 
 export function ThemeToggle() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -8,7 +8,6 @@ export function ThemeToggle() {
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
-
     localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
@@ -16,13 +15,13 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={() => setDarkMode(!darkMode)}
-      className="rounded-full border border-gray-300 p-2 transition hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800"
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 transition hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800"
       aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
     >
       {darkMode ? (
-        <ToggleRight size={40} className="text-yellow-400 absolute" />
+        <Sun size={20} className="text-yellow-400" />
       ) : (
-        <ToggleLeft size={40} className="text-gray-700 absolute" />
+        <Moon size={20} className="text-gray-700" />
       )}
     </button>
   );
