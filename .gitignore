@@ -23,5 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-Sentinel_AI_dashboard_design _Brief.docm
-Sentinel_AI_Security_Agent_Development_Plan.docm
+docs/Sentinel_AI_dashboard_design _Brief.docm
+docs/Sentinel_AI_Security_Agent_Development_Plan.docm
