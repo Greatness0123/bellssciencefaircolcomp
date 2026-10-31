@@ -22,3 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+docs/Sentinel_AI_dashboard_design _Brief.docm
+docs/Sentinel_AI_Security_Agent_Development_Plan.docm
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+backend/venv/
+*.db
+*.sqlite3
+backend/.env
+test_eve.json
