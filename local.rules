@@ -1,0 +1,20 @@
+
+# Detect Ping / ICMP Echo
+alert icmp any any -> 192.168.0.108 any (msg:"SENTINEL-AI ICMP Echo Ping Probe Detected"; itype:8; classtype:misc-activity; sid:1000001; rev:1;)
+
+# Detect Port Scan (SYN scan attempts)
+alert tcp any any -> 192.168.0.108 any (msg:"SENTINEL-AI Test Port Scan Detected"; flags:S; threshold: type threshold, track by_src, count 5, seconds 5; classtype:attempted-recon; sid:1000002; rev:1;)
+
+# Detect Suspicious Web Probe
+alert http any any -> 192.168.0.108 any (msg:"SENTINEL-AI Suspicious HTTP Probe Detected"; content:"Nmap"; http_header; classtype:attempted-recon; sid:1000003; rev:1;)
+
+alert icmp any any -> any any (msg:"SENTINEL-AI ICMP Echo Ping Probe Detected"; itype:8; sid:1000001; rev:2;)
+
+# extra rules (incase i missed any)
+
+# 1. ICMP Ping Probe
+alert icmp any any -> any any (msg:"SENTINEL-AI ICMP Echo Ping Probe Detected"; itype:8; sid:1000001; rev:3;)
+# 2. Port Reconnaissance / SYN Scan
+alert tcp any any -> any any (msg:"SENTINEL-AI Port Scan Reconnaissance Detected"; flags:S; threshold: type threshold, track by_src, count 3, seconds 5; sid:1000002; rev:3;)
+# 3. Scanner Probe
+alert http any any -> any any (msg:"SENTINEL-AI Suspicious Scanner Tool Detected"; content:"Nmap"; http_header; sid:1000003; rev:3;)
