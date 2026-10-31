@@ -12,6 +12,7 @@ const Brand = () => (
         className="h-10 w-10 object-contain sm:h-12 sm:w-12"
       />
     </div>
+
     <h1 className="text-2xl font-bold tracking-tight text-[#0F172A] sm:text-3xl dark:text-white">
       Sentinel <span className="text-[#2DD4BF]">AI</span>
     </h1>
@@ -54,24 +55,20 @@ const Login = () => {
 
       <section className="relative hidden w-full flex-col bg-[#F6F9FC] px-12 py-6 lg:flex lg:min-h-dvh lg:w-1/2 lg:px-12 xl:px-18 dark:bg-[#0B1117]">
         <Brand />
+      </div>
 
-        <div className="my-auto py-16">
-          <h2 className="font-inter text-3xl font-semibold leading-[1.3] tracking-tight text-[#0F172A] xl:text-[40px] dark:text-white">
-            Real alerts. Real evidence.
-            <br />
-            Nothing faked.
-          </h2>
+      {/* Login section */}
+      <section className="flex w-full max-w-[520px] flex-col justify-center py-16">
+        {/* Heading */}
+        <div className="mb-7">
+          <h1 className="font-inter text-3xl font-semibold tracking-tight text-[#0F172A] sm:text-4xl dark:text-white">
+            Welcome Back
+          </h1>
 
-          <ul className="mt-10 space-y-3 text-lg font-semibold text-[#64748B] xl:text-xl dark:text-[#9AA9BA]">
-            {FEATURES.map((item) => (
-              <li key={item} className="flex items-start gap-2">
-                <span className="text-[#2DD4BF]">•</span>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
+          <p className="mt-1 font-inter text-sm font-medium text-[#64748B] sm:text-base dark:text-[#9AA9BA]">
+            Log in to view your alerts and investigations.
+          </p>
         </div>
-      </section>
 
       <section className="flex w-full flex-1 flex-col items-center justify-center bg-white px-4 py-12 sm:px-12 lg:w-1/2 lg:flex-none lg:border-l lg:border-[#E2E8F0] lg:px-[74px] dark:bg-[#0B1117] dark:lg:border-[#2B3A4B]">
         <div className="w-full max-w-130">
@@ -159,10 +156,29 @@ const Login = () => {
               href="/signup"
               className="font-semibold text-[#2DD4BF] transition hover:text-[#0FAE9D]"
             >
-              Create an account
-            </a>
-          </p>
-        </div>
+              Keep me logged in on this device
+            </label>
+          </div>
+
+          {/* Login button */}
+          <button
+            type="submit"
+            className="mt-2 w-full rounded-lg bg-[#2DD4BF] px-4 py-3 text-base font-semibold text-white transition hover:bg-[#19BDAA] sm:mt-5 sm:text-lg"
+          >
+            Login
+          </button>
+        </form>
+
+        {/* Create account */}
+        <p className="mt-7 text-center text-sm font-medium text-[#64748B] sm:text-base dark:text-[#9AA9BA]">
+          New here?{" "}
+          <a
+            href="/signup"
+            className="font-semibold text-[#2DD4BF] transition hover:text-[#0FAE9D]"
+          >
+            Create an account
+          </a>
+        </p>
       </section>
     </main>
   );
