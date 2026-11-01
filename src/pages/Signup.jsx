@@ -1,5 +1,8 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 import ThemeToggle from "../constants/ThemeToggle";
+import { api, saveSession } from "../lib/api";
+
 
 const STEPS = [
   {
@@ -49,16 +52,18 @@ const labelClass =
   "mb-2 block text-base font-inter font-semibold text-[#0F172A] dark:text-white";
 
 const Signup = () => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const strength = useMemo(() => getStrength(form.password), [form.password]);
 
   const handleChange = (e) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (form.password.length < 12) {
       return setError("Password must be at least 12 characters.");
@@ -67,8 +72,16 @@ const Signup = () => {
       return setError("Please confirm the testing agreement to continue.");
     }
     setError("");
-    // TODO: call your signup API here
-    console.log("Signing up:", form);
+    setLoading(true);
+    try {
+      const data = await api.register(form.email, form.password, form.name);
+      saveSession(data.access_token, data.user);
+      navigate("/home");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -202,9 +215,10 @@ const Signup = () => {
             {/* Submit */}
             <button
               type="submit"
-              className="w-full rounded-lg bg-[#2DD4BF] px-4 py-3 text-lg font-semibold text-white transition hover:bg-[#19BDAA] focus:outline-none focus:ring-2 focus:ring-[#20CDB9] focus:ring-offset-2 dark:text-[#0A0E13]"
+              disabled={loading}
+              className="w-full rounded-lg bg-[#2DD4BF] px-4 py-3 text-lg font-semibold text-white transition hover:bg-[#19BDAA] focus:outline-none focus:ring-2 focus:ring-[#20CDB9] focus:ring-offset-2 disabled:opacity-60 dark:text-[#0A0E13]"
             >
-              Create account
+              {loading ? "Creating account..." : "Create account"}
             </button>
           </form>
 

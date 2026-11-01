@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1003.1239999999998 1032.2" width="1003.1239999999998" height="1032.2" style="--bg:#FFFFFF;--fg:#3B3B3B;--line:#3B3B3B;--accent:#005FB8;--muted:#3B3B3BCC;--surface:#F8F8F8;--border:#3B3B3B;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<g class="subgraph" data-id="Frontend" data-label="React 19 Frontend (Vite)">
+  <rect x="40" y="251.00000000000003" width="476.3129999999998" height="96.9" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="40" y="251.00000000000003" width="476.3129999999998" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="52" y="265" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">React 19 Frontend (Vite)</text>
+</g>
+<g class="subgraph" data-id="Backend" data-label="FastAPI Backend (Python)">
+  <rect x="455.9323333333332" y="452.20000000000005" width="353.3373333333333" height="283.90000000000003" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="455.9323333333332" y="452.20000000000005" width="353.3373333333333" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="467.9323333333332" y="466.20000000000005" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">FastAPI Backend (Python)</text>
+</g>
+<g class="subgraph" data-id="Storage" data-label="Storage">
+  <rect x="525.1423333333331" y="864.4000000000001" width="264.38699999999994" height="127.80000000000001" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="525.1423333333331" y="864.4000000000001" width="264.38699999999994" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="537.1423333333331" y="878.4000000000001" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">Storage</text>
+</g>
+<g class="subgraph" data-id="Telemetry" data-label="Data Sources">
+  <rect x="544.3129999999998" y="40" width="418.81100000000004" height="283.90000000000003" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="544.3129999999998" y="40" width="418.81100000000004" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="556.3129999999998" y="54" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">Data Sources</text>
+</g>
+<polyline class="edge" data-from="UI" data-to="API" data-style="solid" data-arrow-start="true" data-arrow-end="true" data-label="HTTP REST &amp; WebSockets" points="278.15649999999994,331.9 278.15649999999994,434.20000000000005 552.1116666666665,434.20000000000005 552.1116666666666,666.3000000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-start)" />
+<polyline class="edge" data-from="API" data-to="DB" data-style="solid" data-arrow-start="true" data-arrow-end="true" points="592.2013333333332,720.1000000000001 592.2013333333332,846.4000000000001 618.6046666666664,846.4000000000001 618.6046666666664,908.4000000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-start)" />
+<polyline class="edge" data-from="Processor" data-to="DB" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Write Alerts &amp; Events" points="718.0303333333331,550 718.0303333333331,562 722.4703333333332,562 722.4703333333332,846.4000000000001 696.0669999999998,846.4000000000001 696.0669999999998,908.4000000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="Suricata" data-to="Processor" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Tail Log File" points="847.6029999999998,307.90000000000003 847.6029999999998,434.20000000000005 718.0303333333331,434.20000000000005 718.0303333333331,496.20000000000005" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="AppLogs" data-to="Processor" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Ingest Endpoint / Log Tail" points="642.7909999999998,307.90000000000003 642.7909999999998,496.20000000000005" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="Processor" data-to="API" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Broadcast New Alerts" points="642.7909999999998,550 642.7909999999998,562 635.3209999999998,562 635.3209999999998,630.3000000000001 632.2909999999998,630.3000000000001 632.2909999999998,666.3000000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="TestClient" data-to="Suricata" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Trigger Tests" points="847.6029999999998,137.8 847.6029999999998,254.10000000000002" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="edge-label" data-from="UI" data-to="API" data-label="HTTP REST &amp; WebSockets">
+  <rect x="205.1564999999999" y="396.9" width="145.954" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="278.1334999999999" y="412.04999999999995" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">HTTP REST &amp; WebSockets</text>
+</g>
+<g class="edge-label" data-from="Processor" data-to="DB" data-label="Write Alerts &amp; Events">
+  <rect x="664.4703333333332" y="785.1000000000001" width="115.066" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="722.0033333333332" y="800.2500000000001" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Write Alerts &amp; Events</text>
+</g>
+<g class="edge-label" data-from="Suricata" data-to="Processor" data-label="Tail Log File">
+  <rect x="809.6029999999998" y="372.90000000000003" width="75.86200000000001" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="847.5339999999999" y="388.05" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Tail Log File</text>
+</g>
+<g class="edge-label" data-from="AppLogs" data-to="Processor" data-label="Ingest Endpoint / Log Tail">
+  <rect x="575.2909999999997" y="372.90000000000003" width="134.668" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="642.6249999999998" y="388.05" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Ingest Endpoint / Log Tail</text>
+</g>
+<g class="edge-label" data-from="Processor" data-to="API" data-label="Broadcast New Alerts">
+  <rect x="575.3209999999998" y="593.0000000000001" width="119.81800000000001" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="635.2299999999998" y="608.1500000000001" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Broadcast New Alerts</text>
+</g>
+<g class="edge-label" data-from="TestClient" data-to="Suricata" data-label="Trigger Tests">
+  <rect x="805.6029999999997" y="180.8" width="83.584" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="847.3949999999998" y="195.95000000000002" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Trigger Tests</text>
+</g>
+<g class="node" data-id="UI" data-label="SOC Dashboard (Login, Overview, Alerts, Network Map, Agent Health)" data-shape="rectangle">
+  <rect x="56" y="295" width="444.3129999999998" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="278.15649999999994" y="313.45" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">SOC Dashboard (Login, Overview, Alerts, Network Map, Agent Health)</text>
+</g>
+<g class="node" data-id="API" data-label="REST API &amp; WebSockets
+(Auth, Alerts, Assets, Health, Audit)" data-shape="rectangle">
+  <rect x="471.9323333333332" y="666.3000000000001" width="240.53799999999993" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="592.2013333333332" y="693.2" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="592.2013333333332" dy="-3.9000000000000012">REST API &amp; WebSockets</tspan><tspan x="592.2013333333332" dy="16.900000000000002">(Auth, Alerts, Assets, Health, Audit)</tspan></text>
+</g>
+<g class="node" data-id="Processor" data-label="Event Processor &amp; Rule Engine
+(Normalise, Correlate, Alert)" data-shape="rectangle">
+  <rect x="567.5516666666665" y="496.20000000000005" width="225.718" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="680.4106666666665" y="523.1" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="680.4106666666665" dy="-3.9000000000000012">Event Processor &amp; Rule Engine</tspan><tspan x="680.4106666666665" dy="16.900000000000002">(Normalise, Correlate, Alert)</tspan></text>
+</g>
+<g class="node" data-id="DB" data-label="SQLite Database
+(Users, Alerts, Assets, AuditLog)" data-shape="cylinder">
+  <rect x="541.1423333333331" y="915.4000000000001" width="232.38699999999994" height="53.80000000000001" fill="var(--_node-fill)" stroke="none" />
+  <line x1="541.1423333333331" y1="915.4000000000001" x2="541.1423333333331" y2="969.2" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <line x1="773.529333333333" y1="915.4000000000001" x2="773.529333333333" y2="969.2" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <ellipse cx="657.3358333333331" cy="969.2" rx="116.19349999999997" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <ellipse cx="657.3358333333331" cy="915.4000000000001" rx="116.19349999999997" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="657.3358333333331" y="942.3000000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="657.3358333333331" dy="-3.9000000000000012">SQLite Database</tspan><tspan x="657.3358333333331" dy="16.900000000000002">(Users, Alerts, Assets, AuditLog)</tspan></text>
+</g>
+<g class="node" data-id="Suricata" data-label="Suricata EVE JSON
+(Network Packet Sensor)" data-shape="rectangle">
+  <rect x="753.2689999999998" y="254.10000000000002" width="188.668" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="847.6029999999998" y="281" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="847.6029999999998" dy="-3.9000000000000012">Suricata EVE JSON</tspan><tspan x="847.6029999999998" dy="16.900000000000002">(Network Packet Sensor)</tspan></text>
+</g>
+<g class="node" data-id="AppLogs" data-label="App / Auth Logs
+(Failed Logins, 403s)" data-shape="rectangle">
+  <rect x="560.3129999999998" y="254.10000000000002" width="164.95600000000002" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="642.7909999999997" y="281" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="642.7909999999997" dy="-3.9000000000000012">App / Auth Logs</tspan><tspan x="642.7909999999997" dy="16.900000000000002">(Failed Logins, 403s)</tspan></text>
+</g>
+<g class="node" data-id="TestClient" data-label="Test Client Scripts
+(Simulated Scans / Attacks)" data-shape="rectangle">
+  <rect x="748.0819999999999" y="84" width="199.04199999999994" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="847.6029999999998" y="110.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="847.6029999999998" dy="-3.9000000000000012">Test Client Scripts</tspan><tspan x="847.6029999999998" dy="16.900000000000002">(Simulated Scans / Attacks)</tspan></text>
+</g>
+</svg>

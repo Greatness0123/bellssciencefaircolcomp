@@ -1,0 +1,110 @@
+
+SENTINEL AI
+Security Agent Development Plan
+Building Sentinel AI's independent network and infrastructure threat detector
+Science fair prototype documentation
+
+1. Purpose and scope
+The security agent operates alongside the general-purpose chatbot. It observes authorised network traffic and selected application/server logs, detects suspicious patterns, records evidence and displays alerts. It does not generate chatbot answers and does not depend on the language model to decide whether an event is malicious.
+For the science fair, prioritise a working rule-based detection pipeline and dashboard. Machine learning is optional and should be added only after collection, detection and alerting work reliably.
+2. What the security sensor and test client do
+Security sensor
+The security sensor is a computer running Suricata, a Python event processor and possibly the dashboard. It receives copies of selected packets from a managed switch using SPAN/port mirroring and/or approved security logs from the app server. It analyses those inputs and generates alerts. It cannot see all network traffic automatically; visibility depends on the switch configuration and the data it receives.
+Test client
+The test client is a laptop or computer used to open the chatbot, establish normal activity and generate controlled, authorised test events. For example, it can run an approved scan against the designated lab server or submit incorrect credentials to a test endpoint. It helps prove a real event was captured and an alert appeared.
+3. Recommended components
+Component
+Purpose
+Recommended option
+Network detection
+Inspect selected traffic and produce events
+Suricata on supported Linux
+Event processor
+Normalise events, apply rules and correlate activity
+Python
+Dashboard
+Display alerts and supporting evidence
+Streamlit
+Alert storage
+Retain recent events
+SQLite initially
+Application telemetry
+Add context not visible in encrypted packets
+Structured JSON logs or restricted log forwarding
+Optional ML
+Classify selected labelled flow features
+scikit-learn after the basic pipeline works
+
+4. Development procedure
+Inventory hardware: Record server, switch, router, sensor computer and network interfaces. Check whether the switch supports SPAN/port mirroring. If not, start with application/server logs or another authorised capture method.
+Prepare sensor host: Install and update a supported Linux distribution; restrict administration to the lab network.
+Install Suricata: Follow the official installation guide and confirm the service starts.
+Validate traffic visibility: Mirror relevant client/server ports or VLANs to the sensor. Generate normal traffic and confirm it is visible.
+Build event pipeline: Read Suricata structured output; extract timestamp, source/destination, protocol, signature and severity; store relevant records.
+Add app/server logs: Record failed authentication, denied requests, rate-limit triggers and administrative actions. Do not log passwords, API keys or unnecessary personal data.
+Implement initial detections: Start with Suricata alerts, repeated failed logins, repeated connection attempts, denied access to a test endpoint and carefully defined outbound-volume anomalies where telemetry supports them.
+Build dashboard: Show timestamp, detection reason, severity, source/destination when available, evidence and status.
+Test end to end: Run normal chatbot activity and authorised tests only against lab systems. Verify collection, detection, storage and display.
+Evaluate and refine: Record detections, missed detections, false positives and alert delay; tune rules.
+Optional ML: If the pipeline is stable, train a small classifier on appropriate labelled network-flow features and compare it with the rule-based baseline.
+5. Minimum viable test scenarios
+Scenario
+Controlled test
+Expected outcome
+Network scan
+Run an authorised scan from the test client against the lab server only.
+A Suricata/configured alert appears with available source/destination details.
+Repeated failed logins
+Submit a limited number of incorrect credentials to a test endpoint.
+App logs record failures and a threshold rule raises an alert.
+Restricted endpoint
+Use a non-privileged test account to request a deliberately restricted route.
+Server records a denied request and dashboard shows it.
+Unusual outbound activity
+If suitable, transfer a harmless test file to an approved lab destination.
+A rule may flag an anomaly; this is not proof of data theft.
+
+6. How the agent works
+Collect: Receive mirrored packets/events and approved application/server logs.
+Normalise: Convert events into a consistent format.
+Detect: Apply Suricata signatures and explicit rules; optionally use an ML score as supporting evidence.
+Correlate: Combine related activity, such as multiple failed logins from one source.
+Alert: Assign severity and explain why the event was flagged.
+Present: Display alerts and preserve the event for inspection.
+7. Recommended alert fields
+Field
+Description
+Alert ID
+Unique record identifier
+Timestamp
+When observed
+Detection name
+For example, repeated failed logins
+Severity
+Informational, low, medium or high according to project rules
+Source/destination
+IP addresses and ports when available
+Evidence
+Rule name, event count, protocol or log reference
+Status
+New, acknowledged, investigating or closed
+Caveat
+Why suspicious and what needs verification
+
+8. Safety and limitations
+Only test systems and networks for which you have explicit permission.
+An alert is an indicator for investigation, not proof that a breach occurred.
+HTTPS/TLS encrypts contents; packet sensors may see metadata but generally cannot read full chatbot prompts or responses.
+Port mirroring exposes only traffic selected in its configuration.
+Never log API keys, passwords, sensitive prompts or unnecessary personal information.
+Keep security detection independent from chatbot response generation where practical.
+Start with alerts rather than automatic blocking, which can interrupt legitimate traffic.
+Use dummy data and restrict dashboard/admin access to the lab network.
+9. Completion criteria
+The prototype is ready when it observes real lab traffic or application/server logs, detects at least one authorised test event using a reproducible rule, displays an alert with evidence and demonstrates the difference between normal and flagged activity. Document visibility gaps and do not claim complete protection against every attack.
+10. Official documentation
+Suricata: https://docs.suricata.io/
+Suricata installation: https://docs.suricata.io/en/latest/install.html
+Streamlit: https://docs.streamlit.io/
+scikit-learn: https://scikit-learn.org/stable/
+Ubuntu Server: https://ubuntu.com/server/docs
