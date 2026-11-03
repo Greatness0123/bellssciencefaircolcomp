@@ -3,7 +3,6 @@ import { useNavigate } from "react-router";
 import ThemeToggle from "../constants/ThemeToggle";
 import { api, saveSession } from "../lib/api";
 
-
 const STEPS = [
   {
     title: "Create your account",
@@ -98,6 +97,9 @@ const Signup = () => {
       <div className="flex min-h-screen w-full items-center justify-center bg-white px-6 py-12 sm:px-12 lg:px-[74px] dark:bg-[#0A0E13]">
         <div className="w-full max-w-130">
           {/* Heading */}
+          <div className="mb-10 flex justify-center">
+            <Brand />
+          </div>
 
           <div className="mb-7">
             <h1 className="font-inter text-4xl font-semibold tracking-tight text-[#0F172A] dark:text-white">

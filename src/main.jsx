@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
 import { getSession } from "./lib/api";
 
 function RequireAuth({ children }) {
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
   {
     path: "/signup",
     element: <Signup />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
   },
   {
     path: "/dashboard",
