@@ -50,6 +50,9 @@ export const api = {
 
   updateAlert: (id, data) => request("PATCH", `/alerts/${id}`, data),
 
+  neutralizeDemoThreat: (id) =>
+    request("POST", `/demo/threat/${encodeURIComponent(id)}/neutralize`),
+
   addNote: (id, content) =>
     request("POST", `/alerts/${id}/notes`, { content }),
 

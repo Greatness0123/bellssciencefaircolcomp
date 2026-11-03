@@ -1,3 +1,4 @@
+from pathlib import Path
 from pydantic_settings import BaseSettings
 from typing import List
 
@@ -7,8 +8,10 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api"
     SECRET_KEY: str = "sentinel-ai-insecure-dev-secret-key-change-in-prod"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
-    DATABASE_URL: str = "sqlite+aiosqlite:///./sentinel.db"
-    EVE_LOG_PATH: str = "./eve.json"
+    DATABASE_URL: str = "sqlite+aiosqlite:///./demo_sentinel.db"
+    DEMO_TARGET_IP: str = "198.51.100.108"
+    DEMO_DISCOVERY_PORT: int = 39547
+    DEMO_EVENT_INTERVAL_SECONDS: float = 1.0
     SENSOR_ID: str = "Sensor-01"
     SENSOR_LOCATION: str = "Server VLAN (Promiscuous SPAN)"
     CORS_ORIGINS: List[str] = [
@@ -19,7 +22,7 @@ class Settings(BaseSettings):
     ]
 
     class Config:
-        env_file = ".env"
+        env_file = Path(__file__).resolve().parents[2] / ".env"
         extra = "allow"
 
 

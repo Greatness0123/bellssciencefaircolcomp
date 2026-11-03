@@ -145,6 +145,8 @@ class SuricataLogEvent(BaseModel):
     signature: Optional[str] = None
     category: Optional[str] = None
     details: Optional[str] = None
+    simulated: bool = False
+    status: Optional[str] = None
 
 
 class OverviewStatsResponse(BaseModel):

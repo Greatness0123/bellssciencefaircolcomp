@@ -124,6 +124,8 @@ def parse_suricata_event(event: dict) -> Dict[str, Any]:
         "signature": signature,
         "category": category,
         "details": details,
+        "simulated": event.get("simulated", False),
+        "status": event.get("status"),
     }
 
 

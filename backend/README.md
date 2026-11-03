@@ -1,45 +1,36 @@
-# Sentinel AI Backend
+# Sentinel AI Demo Backend
 
-FastAPI backend with SQLite database and Suricata event ingestion for the Sentinel AI Security Operations Console.
+This replacement FastAPI backend keeps the existing login, alert, asset, and audit APIs. The original implementation and `sentinel.db` are preserved in `backend1`; the frontend now starts code from `backend` and uses an isolated `demo_sentinel.db`.
 
-## Prerequisites
-- Python 3.11+
-- Virtual environment in `backend/venv`
+## Simulated Event Replay
 
-## Quick Start
+On startup, the backend creates `backend/data/simulated_network_events.jsonl` with 20,000 synthetic JSONL records if the dataset is missing or incomplete. It then streams a random record every second, looping indefinitely. The records use documentation-only IP ranges and `.demo.invalid` hostnames, and are marked as simulated. The source `eve.json` is not read, modified, or replayed.
 
-### 1. Activate Environment
-Windows (PowerShell):
+## Start the Application
+
+No `.env` file or demo key is required. Start the frontend and replacement backend from the repository root:
+
 ```powershell
-backend\venv\Scripts\Activate.ps1
+npm start
 ```
 
-### 2. Start the API Server
-Run either:
-```powershell
-.\run_backend.ps1
-```
-or via Python directly:
-```powershell
-.\backend\venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --reload --port 8000
-```
-or via npm:
-```powershell
-npm run backend
-```
-- API Base URL: `http://localhost:8000`
-- Interactive Swagger Docs: `http://localhost:8000/api/docs`
-- Health Endpoint: `http://localhost:8000/health`
-- WebSocket Alerts: `ws://localhost:8000/ws/alerts`
+The frontend is available at `http://localhost:5173`, the API at `http://localhost:8000`, and API docs at `http://localhost:8000/api/docs`. The old Python environment is retained under `backend1/venv`; launchers use it to run the new source in `backend/`.
 
-### 3. Seed Accounts
-Pre-configured user accounts:
-- Admin: `admin@sentinel.ai` / `SentinelAdmin2026!`
-- Analyst: `analyst@sentinel.ai` / `SentinelAnalyst2026!`
-- Viewer: `viewer@sentinel.ai` / `SentinelViewer2026!`
+## Two-Laptop Demo
 
-To reseed the database at any time:
+Use only a private network you control. The server laptop runs `npm start`; open the LAN URL printed by Vite on the analyst laptop. Allow Node.js and Python on the Windows private-network firewall if prompted. Automatic discovery uses UDP port `39547`; the dashboard API uses TCP port `8000`; the frontend uses TCP port `5173`. Do not expose these development services to the public internet.
+
+Copy the single `trigger.py` file to the sender laptop, install Python if needed, and run:
+
 ```powershell
-backend/venv/Scripts/python backend/seed_data.py
+py trigger.py
 ```
 
+The client discovers the dashboard over the LAN, submits one simulated incident, then waits until the analyst selects it and clicks **Neutralize Demo Threat**. It then prints an access-denied result and exits. The visible dashboard labels the event as simulated; this workflow does not scan, exploit, block, or control either laptop.
+
+The app ensures these active demo accounts exist at startup, without replacing existing accounts or deleting database contents:
+
+- Admin: `Greatness@sentinel.ai` / `Greatness0123`
+- Analyst: `analyst@sentinel.ai` / `Greatness0123`
+
+These fixed credentials are for local demonstrations only. Neutralization requires an authenticated analyst session. `ACCESS_TOKEN_EXPIRE_MINUTES` is an existing login-session setting with a code default; it is unrelated to the sender and needs no demo configuration.

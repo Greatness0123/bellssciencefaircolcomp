@@ -5,20 +5,30 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.database import engine, Base
-from app.api import auth, alerts, assets, agent, audit, websockets
-from app.engine.suricata_watcher import watch_eve_log
+from app.api import auth, alerts, assets, agent, audit, websockets, demo
+from app.engine.demo_stream import replay_demo_events
+from app.engine.discovery import DemoDiscoveryProtocol
+from seed_data import seed_default_users
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    await seed_default_users()
 
-    watcher_task = asyncio.create_task(watch_eve_log(settings.EVE_LOG_PATH))
+    loop = asyncio.get_running_loop()
+    discovery_transport, _ = await loop.create_datagram_endpoint(
+        DemoDiscoveryProtocol,
+        local_addr=("0.0.0.0", settings.DEMO_DISCOVERY_PORT),
+        allow_broadcast=True,
+    )
+    replay_task = asyncio.create_task(replay_demo_events())
     yield
-    watcher_task.cancel()
+    replay_task.cancel()
+    discovery_transport.close()
     try:
-        await watcher_task
+        await replay_task
     except asyncio.CancelledError:
         pass
 
@@ -44,6 +54,7 @@ app.include_router(alerts.router, prefix=settings.API_V1_STR)
 app.include_router(assets.router, prefix=settings.API_V1_STR)
 app.include_router(agent.router, prefix=settings.API_V1_STR)
 app.include_router(audit.router, prefix=settings.API_V1_STR)
+app.include_router(demo.router, prefix=settings.API_V1_STR)
 app.include_router(websockets.router)
 
 

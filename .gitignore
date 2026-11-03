@@ -36,4 +36,5 @@ backend/venv/
 *.db
 *.sqlite3
 backend/.env
-test_eve.json
+backend/data/simulated_network_events.jsonl
+test_eve.json
