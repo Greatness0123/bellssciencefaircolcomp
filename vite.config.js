@@ -16,7 +16,7 @@ export default defineConfig({
       },
     },
     watch: {
-      ignored: ["**/sentinel.db-journal", "**/*.db-journal", "**/eve.json", "**/node_modules/**", "**/dist/**"]
+      ignored: ["**/sentinel.db-journal", "**/*.db-journal", "**/*.db", "**/eve.json", "**/backend/data/**", "**/backend1/**", "**/node_modules/**", "**/dist/**"]
     }
   },
 });

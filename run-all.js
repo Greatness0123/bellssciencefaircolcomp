@@ -4,8 +4,8 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const backendCmd = path.join(__dirname, "backend", "venv", "Scripts", "python.exe");
-const backendArgs = ["-m", "uvicorn", "app.main:app", "--app-dir", "backend", "--reload", "--port", "8000"];
+const backendCmd = path.join(__dirname, "backend1", "venv", "Scripts", "python.exe");
+const backendArgs = ["-m", "uvicorn", "app.main:app", "--app-dir", "backend", "--host", "0.0.0.0", "--port", "8000"];
 
 const viteBin = path.join(__dirname, "node_modules", "vite", "bin", "vite.js");
 
@@ -20,7 +20,7 @@ const backend = spawn(backendCmd, backendArgs, {
   stdio: "inherit",
 });
 
-const frontend = spawn(process.execPath, [viteBin], {
+const frontend = spawn(process.execPath, [viteBin, "--host", "0.0.0.0"], {
   stdio: "inherit",
 });
 
