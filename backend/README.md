@@ -28,4 +28,9 @@ py trigger.py
 
 The client discovers the dashboard over the LAN, submits one simulated incident, then waits until the analyst selects it and clicks **Neutralize Demo Threat**. It then prints an access-denied result and exits. The visible dashboard labels the event as simulated; this workflow does not scan, exploit, block, or control either laptop.
 
-Create a dashboard account through the signup page if this is a fresh database. Neutralization requires an authenticated analyst session. `ACCESS_TOKEN_EXPIRE_MINUTES` is an existing login-session setting with a code default; it is unrelated to the sender and needs no demo configuration.
+The app ensures these active demo accounts exist at startup, without replacing existing accounts or deleting database contents:
+
+- Admin: `Greatness@sentinel.ai` / `Greatness0123`
+- Analyst: `analyst@sentinel.ai` / `Greatness0123`
+
+These fixed credentials are for local demonstrations only. Neutralization requires an authenticated analyst session. `ACCESS_TOKEN_EXPIRE_MINUTES` is an existing login-session setting with a code default; it is unrelated to the sender and needs no demo configuration.

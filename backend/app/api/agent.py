@@ -46,9 +46,16 @@ async def list_suricata_logs(
 
 @router.delete("/logs", status_code=status.HTTP_204_NO_CONTENT)
 async def clear_suricata_logs(
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     clear_demo_buffer()
+    simulated_alerts = await db.execute(
+        select(Alert).where(Alert.evidence_json["simulated"].as_boolean().is_(True))
+    )
+    for alert in simulated_alerts.scalars().all():
+        await db.delete(alert)
+    await db.commit()
     await manager.broadcast_json({"type": "STREAM_CLEARED"})
     await manager.broadcast_json({"type": "STREAM_COUNT", "data": 0})
 
@@ -58,13 +65,23 @@ async def get_overview_stats(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    critical_res = await db.execute(select(func.count(Alert.id)).where(Alert.severity == "Critical"))
+    real_alert = Alert.evidence_json["simulated"].as_boolean().is_not(True)
+    critical_res = await db.execute(
+        select(func.count(Alert.id)).where(Alert.severity == "Critical", real_alert)
+    )
     critical_count = critical_res.scalar() or 0
 
-    high_res = await db.execute(select(func.count(Alert.id)).where(Alert.severity == "High"))
+    high_res = await db.execute(
+        select(func.count(Alert.id)).where(Alert.severity == "High", real_alert)
+    )
     high_count = high_res.scalar() or 0
 
-    open_res = await db.execute(select(func.count(Alert.id)).where(Alert.status.in_(["New", "Acknowledged", "Investigating"])))
+    open_res = await db.execute(
+        select(func.count(Alert.id)).where(
+            Alert.status.in_(["New", "Acknowledged", "Investigating"]),
+            real_alert,
+        )
+    )
     open_count = open_res.scalar() or 0
 
     assets_res = await db.execute(select(func.count(Asset.id)))
@@ -75,7 +92,11 @@ async def get_overview_stats(
     sensor_status = sensor.status if sensor else "Online"
     events_processed = get_streamed_count()
 
-    dist_res = await db.execute(select(Alert.severity, func.count(Alert.id)).group_by(Alert.severity))
+    dist_res = await db.execute(
+        select(Alert.severity, func.count(Alert.id))
+        .where(real_alert)
+        .group_by(Alert.severity)
+    )
     severity_distribution = {row[0]: row[1] for row in dist_res.all()}
     for level in ["Critical", "High", "Medium", "Low", "Informational"]:
         if level not in severity_distribution:

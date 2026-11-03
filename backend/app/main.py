@@ -8,12 +8,14 @@ from app.database import engine, Base
 from app.api import auth, alerts, assets, agent, audit, websockets, demo
 from app.engine.demo_stream import replay_demo_events
 from app.engine.discovery import DemoDiscoveryProtocol
+from seed_data import seed_default_users
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    await seed_default_users()
 
     loop = asyncio.get_running_loop()
     discovery_transport, _ = await loop.create_datagram_endpoint(

@@ -3,7 +3,6 @@ import { useNavigate } from "react-router";
 import { api, getSession, clearSession, openAlertSocket } from "../lib/api";
 import ThemeToggle from "../constants/ThemeToggle";
 
-
 export default function Home() {
   const navigate = useNavigate();
   const session = getSession();
@@ -11,11 +10,7 @@ export default function Home() {
   const [logs, setLogs] = useState([]);
   const [filterThreatsOnly, setFilterThreatsOnly] = useState(false);
   const [error, setError] = useState("");
-  const [isClearing, setIsClearing] = useState(false);
-  const [selectedThreat, setSelectedThreat] = useState(null);
-  const [isNeutralizing, setIsNeutralizing] = useState(false);
   const tableBottomRef = useRef(null);
-  const clearCutoffRef = useRef(0);
 
   useEffect(() => {
     api.overview()
@@ -30,36 +25,26 @@ export default function Home() {
     const ws = openAlertSocket((message) => {
       if (message.type === "STREAM_CLEARED") {
         setLogs([]);
+        api.overview().then(setOverview).catch(() => setError("Failed to refresh overview data"));
       }
       if (message.type === "STREAM_COUNT") {
         setOverview((prev) => prev
           ? { ...prev, events_processed: message.data }
           : prev);
       }
-      if (message.type === "DEMO_NEUTRALIZED" && message.data?.id) {
-        setLogs((prev) => prev.map((log) => log.id === message.data.id
-          ? { ...log, status: "Neutralized" }
-          : log));
-        setSelectedThreat((prev) => prev?.id === message.data.id
-          ? { ...prev, status: "Neutralized" }
-          : prev);
-      }
       if (message.type === "LOG_STREAM" && message.data) {
-        const eventTime = Date.parse(message.data.timestamp);
-        if (Number.isFinite(eventTime) && eventTime <= clearCutoffRef.current) {
-          return;
-        }
         setLogs((prev) => [message.data, ...prev.slice(0, 199)]);
         setOverview((prev) => {
           if (!prev) return prev;
           const isThreat = message.data.is_threat;
+          const isSimulated = message.data.simulated;
           const sev = message.data.severity;
           return {
             ...prev,
             sensor_status: "Online",
-            critical_count: sev === "Critical" ? prev.critical_count + 1 : prev.critical_count,
-            high_count: sev === "High" ? prev.high_count + 1 : prev.high_count,
-            open_count: isThreat ? prev.open_count + 1 : prev.open_count,
+            critical_count: !isSimulated && sev === "Critical" ? prev.critical_count + 1 : prev.critical_count,
+            high_count: !isSimulated && sev === "High" ? prev.high_count + 1 : prev.high_count,
+            open_count: isThreat && !isSimulated ? prev.open_count + 1 : prev.open_count,
           };
         });
       }
@@ -76,39 +61,12 @@ export default function Home() {
   };
 
   const handleClearStream = async () => {
-    if (isClearing) return;
-
-    setIsClearing(true);
-    clearCutoffRef.current = Date.now();
-    setLogs([]);
-    setError("");
-
     try {
       await api.clearLogs();
-    } catch {
-      setError("Failed to clear event stream");
-    } finally {
-      setIsClearing(false);
-    }
-  };
-
-  const handleNeutralizeThreat = async () => {
-    if (!selectedThreat?.simulated || isNeutralizing) return;
-
-    setIsNeutralizing(true);
-    try {
-      await api.neutralizeDemoThreat(selectedThreat.id);
-      setLogs((prev) => prev.map((log) => log.id === selectedThreat.id
-        ? { ...log, status: "Neutralized" }
-        : log));
-      setSelectedThreat((prev) => prev
-        ? { ...prev, status: "Neutralized" }
-        : prev);
+      setLogs([]);
       setError("");
     } catch {
-      setError("Failed to neutralize the simulated incident");
-    } finally {
-      setIsNeutralizing(false);
+      setError("Failed to clear event stream");
     }
   };
 
@@ -132,6 +90,9 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-4">
           <ThemeToggle />
+          {/* <span className="text-sm font-medium text-[#64748B] dark:text-[#9AA9BA]">
+            {session?.user?.full_name} ({session?.user?.role})
+          </span> */}
           <button
             onClick={handleLogout}
             className="rounded-lg border border-[#E2E8F0] px-3.5 py-1.5 text-sm font-semibold text-[#64748B] transition hover:border-[#2DD4BF] hover:text-[#2DD4BF] dark:border-[#2B3A4B] dark:text-[#9AA9BA]"
@@ -145,9 +106,7 @@ export default function Home() {
         <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">Security Dashboard</h2>
-            <p className="mt-1 text-sm text-[#64748B] dark:text-[#9AA9BA]">
-              Synthetic telemetry replay | Demo mode
-            </p>
+        
           </div>
         
         </div>
@@ -186,7 +145,7 @@ export default function Home() {
             </div>
             <div className="rounded-xl border border-[#E2E8F0] bg-white p-4 transition-shadow hover:shadow-sm dark:border-[#2B3A4B] dark:bg-[#111922]">
               <p className="text-xs font-semibold uppercase tracking-wider text-[#64748B] dark:text-[#9AA9BA]">
-                Total Events Streamed
+                Total Packets Streamed
               </p>
               <p className="mt-1 text-3xl font-bold text-blue-500">
                 {overview.events_processed}
@@ -215,10 +174,9 @@ export default function Home() {
               </label>
               <button
                 onClick={handleClearStream}
-                disabled={isClearing}
-                className="text-xs font-medium text-[#64748B] hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50 dark:text-[#9AA9BA]"
+                className="text-xs font-medium text-[#64748B] hover:text-red-500 dark:text-[#9AA9BA]"
               >
-                {isClearing ? "Clearing..." : "Clear Stream"}
+                Clear Stream
               </button>
             </div>
           </div>
@@ -247,34 +205,25 @@ export default function Home() {
                 ) : (
                   displayedLogs.map((log) => {
                     const isThreat = log.is_threat;
+                    const isCritical = log.severity === "Critical";
+                    const rowClass = isThreat
+                      ? isCritical
+                        ? "bg-red-50/90 text-red-950 font-semibold dark:bg-red-950/60 dark:text-red-100"
+                        : "bg-orange-50/90 text-orange-950 font-semibold dark:bg-orange-950/50 dark:text-orange-100"
+                      : "hover:bg-gray-50/70 dark:hover:bg-gray-800/40 text-[#334155] dark:text-[#CBD5E1]";
                     return (
                       <tr
                         key={log.id + log.timestamp}
-                        onClick={isThreat ? () => setSelectedThreat(log) : undefined}
-                        onKeyDown={isThreat ? (event) => {
-                          if (event.key === "Enter" || event.key === " ") {
-                            event.preventDefault();
-                            setSelectedThreat(log);
-                          }
-                        } : undefined}
-                        tabIndex={isThreat ? 0 : undefined}
-                        role={isThreat ? "button" : undefined}
-                        className={`transition-colors ${
-                          isThreat
-                            ? "cursor-pointer bg-red-50/90 text-red-950 font-semibold hover:bg-red-100 dark:bg-red-950/60 dark:text-red-100 dark:hover:bg-red-950"
-                            : "hover:bg-gray-50/70 dark:hover:bg-gray-800/40 text-[#334155] dark:text-[#CBD5E1]"
-                        }`}
+                        className={`transition-colors ${rowClass}`}
                       >
                         <td className="py-2.5 px-4 whitespace-nowrap">
                           {isThreat ? (
-                            <span className="inline-flex items-center gap-1.5 rounded bg-red-600 px-2 py-0.5 text-[11px] font-bold text-white shadow-xs">
-                              {log.simulated
-                                ? `SIMULATED THREAT (${log.severity || "HIGH"})`
-                                : `THREAT (${log.severity || "HIGH"})`}
+                            <span className={`inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[11px] font-bold text-white shadow-xs ${isCritical ? "bg-red-600" : "bg-orange-600"}`}>
+                              THREAT ({log.severity || "HIGH"})
                             </span>
                           ) : (
                             <span className="inline-flex rounded bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-                              {log.simulated ? `SIM ${log.event_type.toUpperCase()}` : log.event_type.toUpperCase()}
+                              {log.event_type.toUpperCase()}
                             </span>
                           )}
                         </td>
@@ -292,7 +241,7 @@ export default function Home() {
                         </td>
                         <td className="py-2.5 px-5 font-sans">
                           {isThreat ? (
-                            <span className="font-bold text-red-700 dark:text-red-300">
+                            <span className={`font-bold ${isCritical ? "text-red-700 dark:text-red-300" : "text-orange-700 dark:text-orange-300"}`}>
                               {log.signature || log.details}
                             </span>
                           ) : (
@@ -309,79 +258,6 @@ export default function Home() {
             </table>
           </div>
         </div>
-
-        {selectedThreat && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
-            onMouseDown={(event) => {
-              if (event.target === event.currentTarget) setSelectedThreat(null);
-            }}
-          >
-            <section
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="threat-dialog-title"
-              className="w-full max-w-lg rounded-xl border border-[#CBD5E1] bg-white p-6 shadow-2xl dark:border-[#2B3A4B] dark:bg-[#111922]"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-red-600 dark:text-red-400">
-                    {selectedThreat.simulated ? "Simulated Incident" : "Suricata Alert"}
-                  </p>
-                  <h2 id="threat-dialog-title" className="mt-2 text-lg font-bold">
-                    {selectedThreat.signature || selectedThreat.details || "Threat detected"}
-                  </h2>
-                </div>
-                <button
-                  onClick={() => setSelectedThreat(null)}
-                  className="text-sm font-medium text-[#64748B] hover:text-[#0F172A] dark:text-[#9AA9BA] dark:hover:text-white"
-                >
-                  Close
-                </button>
-              </div>
-              <dl className="mt-5 grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <dt className="text-xs text-[#64748B] dark:text-[#9AA9BA]">Severity</dt>
-                  <dd className="mt-1 font-semibold">{selectedThreat.severity || "Unknown"}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-[#64748B] dark:text-[#9AA9BA]">Status</dt>
-                  <dd className="mt-1 font-semibold">{selectedThreat.status || "New"}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-[#64748B] dark:text-[#9AA9BA]">Source</dt>
-                  <dd className="mt-1 break-all font-mono">{selectedThreat.src_ip}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-[#64748B] dark:text-[#9AA9BA]">Destination</dt>
-                  <dd className="mt-1 break-all font-mono">{selectedThreat.dest_ip}</dd>
-                </div>
-              </dl>
-              {selectedThreat.simulated && (
-                <p className="mt-5 rounded-md bg-cyan-50 p-3 text-xs text-cyan-900 dark:bg-cyan-950/50 dark:text-cyan-100">
-                  Simulation only. Neutralizing updates this demo incident; it does not block or control a device.
-                </p>
-              )}
-              <div className="mt-6 flex justify-end gap-3">
-                <button
-                  onClick={() => setSelectedThreat(null)}
-                  className="rounded-md border border-[#CBD5E1] px-4 py-2 text-sm font-semibold text-[#475569] dark:border-[#3B4A5C] dark:text-[#CBD5E1]"
-                >
-                  Done
-                </button>
-                {selectedThreat.simulated && selectedThreat.status !== "Neutralized" && (
-                  <button
-                    onClick={handleNeutralizeThreat}
-                    disabled={isNeutralizing}
-                    className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
-                  >
-                    {isNeutralizing ? "Neutralizing..." : "Neutralize Demo Threat"}
-                  </button>
-                )}
-              </div>
-            </section>
-          </div>
-        )}
 
         {/* <p className="mt-5 text-center text-xs text-[#64748B] dark:text-[#9AA9BA]">
           Live stream via WebSocket (/ws/alerts) &middot; Telemetry source: Kali Suricata Sensor (/var/log/suricata/eve.json)

@@ -37,7 +37,7 @@ const Brand = () => (
 function getStrength(pw) {
   if (!pw) return 0;
   let score = 0;
-  if (pw.length >= 12) score++;
+  if (pw.length >= 8) score++;
   if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
   if (/\d/.test(pw)) score++;
   if (/[^A-Za-z0-9]/.test(pw)) score++;
@@ -64,8 +64,8 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (form.password.length < 12) {
-      return setError("Password must be at least 12 characters.");
+    if (form.password.length < 8) {
+      return setError("Password must be at least 8 characters.");
     }
     if (!agreed) {
       return setError("Please confirm the testing agreement to continue.");
@@ -156,7 +156,7 @@ const Signup = () => {
                 id="password"
                 name="password"
                 type="password"
-                placeholder="At least 12 characters"
+                placeholder="At least 8 characters"
                 autoComplete="new-password"
                 value={form.password}
                 onChange={handleChange}
