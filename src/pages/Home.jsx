@@ -3,11 +3,7 @@ import { useNavigate } from "react-router";
 import { api, getSession, clearSession, openAlertSocket } from "../lib/api";
 import ThemeToggle from "../constants/ThemeToggle";
 
-const Home = () => {
-  return(
-    <div>welcome to the home page</div>
-  ) ;
-};
+
 export default function Home() {
   const navigate = useNavigate();
   const session = getSession();

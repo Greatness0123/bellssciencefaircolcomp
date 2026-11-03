@@ -30,6 +30,8 @@ const router = createBrowserRouter([
   {
     path: "/dashboard",
     element: <Dashboard />,
+  },
+  {
     path: "/home",
     element: (
       <RequireAuth>
