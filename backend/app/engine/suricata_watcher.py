@@ -2,11 +2,12 @@ import os
 import json
 import asyncio
 import datetime
+import uuid
 from collections import deque
 from typing import List, Dict, Any
 from sqlalchemy import select
 from app.database import AsyncSessionLocal
-from app.models import Alert, SensorState, Asset
+from app.models import Alert, SensorState, NetworkEventLog
 from app.core.config import settings
 from app.api.websockets import manager
 
@@ -35,24 +36,6 @@ def clear_eve_log(file_path: str):
     with open(file_path, "w", encoding="utf-8"):
         pass
     clear_recent_logs()
-
-
-def count_eve_events(file_path: str) -> int:
-    count = 0
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            for line in f:
-                if not line.strip():
-                    continue
-                try:
-                    event = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                if isinstance(event, dict):
-                    count += 1
-    except OSError:
-        pass
-    return count
 
 
 def parse_suricata_event(event: dict) -> Dict[str, Any]:
@@ -136,16 +119,25 @@ async def process_eve_event(event: dict):
 
     parsed_log = parse_suricata_event(event)
     recent_logs_buffer.appendleft(parsed_log)
+    processed_count = 0
 
     async with AsyncSessionLocal() as session:
         sensor_res = await session.execute(select(SensorState))
         sensor = sensor_res.scalars().first()
-        if sensor:
-            sensor.events_processed += 1
-            sensor.status = "Online"
-            sensor.detection_engine_status = "Active"
-            sensor.last_heartbeat = datetime.datetime.now(datetime.timezone.utc)
-            await session.commit()
+        if not sensor:
+            sensor = SensorState(id=settings.SENSOR_ID, sensor_name=settings.SENSOR_ID)
+            session.add(sensor)
+        sensor.events_processed = (sensor.events_processed or 0) + 1
+        sensor.status = "Online"
+        sensor.detection_engine_status = "Active"
+        sensor.last_heartbeat = datetime.datetime.now(datetime.timezone.utc)
+        processed_count = sensor.events_processed
+        session.add(NetworkEventLog(
+            id=str(uuid.uuid4()),
+            event_id=parsed_log["id"],
+            event_data=parsed_log,
+        ))
+        await session.commit()
 
     if parsed_log["is_threat"]:
         src_ip = parsed_log["src_ip"]
@@ -196,6 +188,7 @@ async def process_eve_event(event: dict):
         "type": "LOG_STREAM",
         "data": parsed_log,
     })
+    await manager.broadcast_json({"type": "STREAM_COUNT", "data": processed_count})
 
 
 async def watch_eve_log(file_path: str):
@@ -205,19 +198,13 @@ async def watch_eve_log(file_path: str):
             continue
 
         try:
-            event_count = count_eve_events(file_path)
             observed_generation = stream_generation
             with open(file_path, "r", encoding="utf-8") as f:
                 f.seek(0, os.SEEK_END)
                 while True:
                     if observed_generation != stream_generation:
-                        f.seek(0)
-                        event_count = count_eve_events(file_path)
+                        f.seek(0, os.SEEK_END)
                         observed_generation = stream_generation
-                        await manager.broadcast_json({
-                            "type": "STREAM_COUNT",
-                            "data": event_count,
-                        })
 
                     line = f.readline()
                     if not line:
@@ -235,11 +222,6 @@ async def watch_eve_log(file_path: str):
                     if not isinstance(event, dict):
                         continue
 
-                    event_count += 1
-                    await manager.broadcast_json({
-                        "type": "STREAM_COUNT",
-                        "data": event_count,
-                    })
                     await process_eve_event(event)
         except Exception:
             await asyncio.sleep(2.0)

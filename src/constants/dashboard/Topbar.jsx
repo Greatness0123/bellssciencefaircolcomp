@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ChevronDown, Search, Bell, Monitor, Menu } from "lucide-react";
 
-const Topbar = ({ menuOpen, onMenuClick }) => {
+const Topbar = ({ menuOpen, onMenuClick, mode, onModeChange }) => {
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
@@ -43,6 +43,28 @@ const Topbar = ({ menuOpen, onMenuClick }) => {
           </div>
           <ChevronDown size={14} className="text-[#64748B] dark:text-[#9AA9BA]" />
         </button>
+
+        <div
+          className="flex shrink-0 items-center rounded-md border border-[#E2E8F0] p-0.5 dark:border-[#2B3A4B]"
+          role="group"
+          aria-label="Threat response mode"
+        >
+          {["automated", "manual"].map((option) => (
+            <button
+              key={option}
+              type="button"
+              aria-pressed={mode === option}
+              onClick={() => onModeChange(option)}
+              className={`rounded px-2 py-1.5 text-[10px] font-semibold capitalize transition-colors sm:px-2.5 ${
+                mode === option
+                  ? "bg-[#CCFBF1] text-[#0F766E] dark:bg-[#134E4A] dark:text-[#99F6E4]"
+                  : "text-[#64748B] hover:bg-[#F8FAFC] dark:text-[#9AA9BA] dark:hover:bg-[#111A24]"
+              }`}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
 
         {/* Sensor status */}
         <div className="hidden items-center gap-2 sm:flex sm:gap-3">

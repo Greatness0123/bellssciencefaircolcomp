@@ -3,6 +3,7 @@ import ipaddress
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,7 +13,7 @@ from app.api.websockets import manager
 from app.core.config import settings
 from app.database import get_db
 from app.engine.suricata_watcher import recent_logs_buffer
-from app.models import Alert, AuditLog, User
+from app.models import Alert, AuditLog, NetworkEventLog, SensorState, User
 
 router = APIRouter(prefix="/demo", tags=["Simulation Demo"])
 
@@ -51,7 +52,7 @@ async def trigger_demo_threat(
     alert_id = f"DEMO-{uuid.uuid4().hex[:12].upper()}"
     source_ip = client_host
     timestamp = datetime.datetime.now(datetime.timezone.utc)
-    title = f"SIMULATED: {payload.scenario}"
+    title = f" {payload.scenario}"
     evidence = {
         "simulated": True,
         "sender": payload.client_name,
@@ -67,7 +68,7 @@ async def trigger_demo_threat(
         status="New",
         source_ip=source_ip,
         dest_ip=settings.DEMO_TARGET_IP,
-        protocol="SIM",
+        protocol="DOS",
         network_location="Isolated demonstration",
         description=f"{payload.client_name} submitted a simulated incident. No exploit or access attempt was performed.",
         evidence_json=evidence,
@@ -76,14 +77,11 @@ async def trigger_demo_threat(
         created_at=timestamp,
         updated_at=timestamp,
     )
-    db.add(alert)
-    await db.commit()
-
     log_event = {
         "id": alert_id,
         "timestamp": timestamp.isoformat(),
         "event_type": "alert",
-        "proto": "SIM",
+        "proto": "DOS",
         "src_ip": source_ip,
         "src_port": None,
         "dest_ip": settings.DEMO_TARGET_IP,
@@ -96,8 +94,26 @@ async def trigger_demo_threat(
         "simulated": True,
         "status": "New",
     }
+    db.add(alert)
+    db.add(NetworkEventLog(
+        id=str(uuid.uuid4()),
+        event_id=alert_id,
+        event_data=log_event,
+    ))
+    sensor_res = await db.execute(select(SensorState))
+    sensor = sensor_res.scalars().first()
+    if not sensor:
+        sensor = SensorState(id=settings.SENSOR_ID, sensor_name=settings.SENSOR_ID)
+        db.add(sensor)
+    sensor.events_processed = (sensor.events_processed or 0) + 1
+    sensor.status = "Online"
+    sensor.detection_engine_status = "Active"
+    sensor.last_heartbeat = timestamp
+    await db.commit()
+
     recent_logs_buffer.appendleft(log_event)
     await manager.broadcast_json({"type": "LOG_STREAM", "data": log_event})
+    await manager.broadcast_json({"type": "STREAM_COUNT", "data": sensor.events_processed})
 
     return {"incident_id": alert_id, "status": "pending", "message": "Simulation event delivered"}
 
@@ -116,6 +132,7 @@ async def get_demo_threat_status(
 @router.post("/threat/{alert_id}/neutralize")
 async def neutralize_demo_threat(
     alert_id: str,
+    action: str = Query("automated", pattern="^(automated|quarantine|destroy|dismiss)$"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
@@ -123,22 +140,37 @@ async def neutralize_demo_threat(
     if alert.status != "Neutralized":
         alert.status = "Neutralized"
         alert.updated_at = datetime.datetime.now(datetime.timezone.utc)
+        alert.evidence_json = {
+            **(alert.evidence_json or {}),
+            "resolution_action": action,
+        }
         db.add(AuditLog(
             actor_name=current_user.email,
             action="DEMO_THREAT_NEUTRALIZED",
             target_type="DEMO_ALERT",
             target_id=alert.id,
-            details="Analyst neutralized a simulated incident. No host controls were executed.",
+            details=f"Simulation resolved via {action}. No host controls were executed.",
         ))
         await db.commit()
 
     for log_event in recent_logs_buffer:
         if log_event.get("id") == alert.id:
             log_event["status"] = "Neutralized"
+            log_event["resolution_action"] = action
             break
+
+    event_logs = await db.execute(
+        select(NetworkEventLog).where(NetworkEventLog.event_id == alert.id)
+    )
+    for event_log in event_logs.scalars():
+        event_data = getattr(event_log, "event_data", {})
+        if isinstance(event_data, dict):
+            event_data["status"] = "Neutralized"
+            setattr(event_log, "event_data", event_data)
+    await db.commit()
 
     await manager.broadcast_json({
         "type": "DEMO_NEUTRALIZED",
-        "data": {"id": alert.id, "status": "Neutralized"},
+        "data": {"id": alert.id, "status": "Neutralized", "resolution_action": action},
     })
     return {"incident_id": alert.id, "status": "neutralized"}

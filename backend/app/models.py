@@ -94,3 +94,12 @@ class SensorState(Base):
     events_processed = Column(Integer, default=0)
     detection_engine_status = Column(String(50), default="Active")
     ruleset_version = Column(String(50), default="v1.4.2")
+
+
+class NetworkEventLog(Base):
+    __tablename__ = "network_event_logs"
+
+    id = Column(String(36), primary_key=True)
+    event_id = Column(String(100), index=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now, index=True)
+    event_data = Column(JSON, nullable=False)

@@ -1,14 +1,13 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, delete
 from typing import List
 
 from app.database import get_db
-from app.models import SensorState, Alert, Asset, User
+from app.models import SensorState, Alert, Asset, User, NetworkEventLog
 from app.schemas import SensorStatusResponse, OverviewStatsResponse, SuricataLogEvent
 from app.api.auth import get_current_active_user
-from app.engine.suricata_watcher import get_recent_logs
-from app.engine.demo_stream import clear_demo_buffer, get_streamed_count
+from app.engine.demo_stream import clear_demo_buffer
 from app.api.websockets import manager
 
 router = APIRouter(prefix="/agent", tags=["Agent & Overview"])
@@ -39,9 +38,15 @@ async def get_sensor_status(
 
 @router.get("/logs", response_model=List[SuricataLogEvent])
 async def list_suricata_logs(
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    return get_recent_logs()
+    result = await db.execute(
+        select(NetworkEventLog.event_data).order_by(
+            NetworkEventLog.created_at.desc(), NetworkEventLog.id.desc()
+        )
+    )
+    return result.scalars().all()
 
 
 @router.delete("/logs", status_code=status.HTTP_204_NO_CONTENT)
@@ -50,6 +55,11 @@ async def clear_suricata_logs(
     current_user: User = Depends(get_current_active_user)
 ):
     clear_demo_buffer()
+    await db.execute(delete(NetworkEventLog))
+    sensor_res = await db.execute(select(SensorState))
+    sensor = sensor_res.scalars().first()
+    if sensor:
+        sensor.events_processed = 0
     simulated_alerts = await db.execute(
         select(Alert).where(Alert.evidence_json["simulated"].as_boolean().is_(True))
     )
@@ -65,21 +75,19 @@ async def get_overview_stats(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    real_alert = Alert.evidence_json["simulated"].as_boolean().is_not(True)
     critical_res = await db.execute(
-        select(func.count(Alert.id)).where(Alert.severity == "Critical", real_alert)
+        select(func.count(Alert.id)).where(Alert.severity == "Critical")
     )
     critical_count = critical_res.scalar() or 0
 
     high_res = await db.execute(
-        select(func.count(Alert.id)).where(Alert.severity == "High", real_alert)
+        select(func.count(Alert.id)).where(Alert.severity == "High")
     )
     high_count = high_res.scalar() or 0
 
     open_res = await db.execute(
         select(func.count(Alert.id)).where(
             Alert.status.in_(["New", "Acknowledged", "Investigating"]),
-            real_alert,
         )
     )
     open_count = open_res.scalar() or 0
@@ -90,11 +98,10 @@ async def get_overview_stats(
     sensor_res = await db.execute(select(SensorState))
     sensor = sensor_res.scalars().first()
     sensor_status = sensor.status if sensor else "Online"
-    events_processed = get_streamed_count()
+    events_processed = sensor.events_processed if sensor else 0
 
     dist_res = await db.execute(
         select(Alert.severity, func.count(Alert.id))
-        .where(real_alert)
         .group_by(Alert.severity)
     )
     severity_distribution = {row[0]: row[1] for row in dist_res.all()}
@@ -104,7 +111,12 @@ async def get_overview_stats(
 
     recent_res = await db.execute(select(Alert).order_by(Alert.created_at.desc()).limit(10))
     recent_alerts = recent_res.scalars().all()
-    recent_logs = get_recent_logs()[:50]
+    logs_res = await db.execute(
+        select(NetworkEventLog.event_data).order_by(
+            NetworkEventLog.created_at.desc(), NetworkEventLog.id.desc()
+        ).limit(50)
+    )
+    recent_logs = logs_res.scalars().all()
 
     return {
         "critical_count": critical_count,

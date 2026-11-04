@@ -7,11 +7,9 @@ from typing import Any, Dict, List
 
 from app.core.config import settings
 from app.engine.suricata_watcher import process_eve_event
-from app.api.websockets import manager
 
 DATASET_PATH = Path(__file__).resolve().parents[2] / "data" / "simulated_network_events.jsonl"
 DATASET_SIZE = 20_000
-_streamed_count = 0
 
 
 def _build_demo_event(index: int, rng: random.Random) -> Dict[str, Any]:
@@ -85,20 +83,13 @@ def load_demo_events() -> List[Dict[str, Any]]:
     return records
 
 
-def get_streamed_count() -> int:
-    return _streamed_count
-
-
 def clear_demo_buffer() -> None:
-    global _streamed_count
     from app.engine.suricata_watcher import clear_recent_logs
 
     clear_recent_logs()
-    _streamed_count = 0
 
 
 async def replay_demo_events() -> None:
-    global _streamed_count
     records = load_demo_events()
     rng = random.Random()
     interval = max(0.1, settings.DEMO_EVENT_INTERVAL_SECONDS)
@@ -109,6 +100,4 @@ async def replay_demo_events() -> None:
         event["flow_id"] = rng.randrange(1_000_000_000, 9_999_999_999)
         event["simulated"] = True
         await process_eve_event(event)
-        _streamed_count += 1
-        await manager.broadcast_json({"type": "STREAM_COUNT", "data": _streamed_count})
         await asyncio.sleep(interval)

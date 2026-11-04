@@ -2,6 +2,7 @@ import ipaddress
 import json
 import select
 import socket
+import sys
 import time
 import uuid
 from urllib.error import HTTPError, URLError
@@ -106,8 +107,26 @@ def api_request(url: str, method: str, payload=None):
         return json.loads(response.read().decode("utf-8"))
 
 
+def resolve_backend() -> str:
+    if len(sys.argv) > 1:
+        raw = sys.argv[1].strip().rstrip("/")
+        if not raw.startswith(("http://", "https://")):
+            raw = f"http://{raw}"
+        print(f"Sentinel lab client: using provided dashboard address: {raw}")
+        try:
+            with urlopen(f"{raw}/health", timeout=3) as health:
+                health.read()
+        except (HTTPError, URLError, TimeoutError) as error:
+            print(f"Could not reach the dashboard at {raw}: {error}")
+            print("Check that the dashboard is running, both laptops share the hotspot,")
+            print("and Windows Firewall on the dashboard laptop allows inbound TCP 8000.")
+            raise SystemExit(1)
+        return raw
+    return discover_backend()
+
+
 def main() -> int:
-    backend = discover_backend()
+    backend = resolve_backend()
     client_name = socket.gethostname()
 
     try:
@@ -116,7 +135,7 @@ def main() -> int:
             "POST",
             {
                 "client_name": client_name,
-                "scenario": "Authorized lab access simulation",
+                "scenario": "Unauthorized access Detected",
             },
         )
     except (HTTPError, URLError, TimeoutError) as error:
